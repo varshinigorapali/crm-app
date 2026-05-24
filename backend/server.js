@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const path = require('path');
 
 const authRoutes = require('./routes/auth');
 const leadRoutes = require('./routes/leads');
@@ -13,6 +14,12 @@ app.use(express.json());
 
 app.use('/api/auth', authRoutes);
 app.use('/api/leads', leadRoutes);
+
+const frontendBuild = path.join(__dirname, '..', 'frontend', 'build');
+app.use(express.static(frontendBuild));
+app.get('*', (req, res) => {
+  res.sendFile(path.join(frontendBuild, 'index.html'));
+});
 
 const PORT = process.env.PORT || 5000;
 

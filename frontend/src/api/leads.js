@@ -1,4 +1,4 @@
-const API = process.env.REACT_APP_API || 'http://localhost:5000/api';
+const API = process.env.REACT_APP_API || '/api';
 
 function headers() {
   const token = localStorage.getItem('token');
