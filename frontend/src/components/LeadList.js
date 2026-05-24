@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { getLeads, deleteLead } from '../api/leads';
 import LeadForm from './LeadForm';
 import LeadDetail from './LeadDetail';
@@ -11,15 +11,21 @@ export default function LeadList() {
   const [editLead, setEditLead] = useState(null);
   const [selectedId, setSelectedId] = useState(null);
   const [error, setError] = useState('');
-
-  const fetchLeads = useCallback(() => {
+  const loadLeads = () => {
     const params = {};
     if (statusFilter) params.status = statusFilter;
     if (search) params.search = search;
     getLeads(params).then(setLeads).catch((err) => setError(err.message));
-  }, [search, statusFilter]);
+  };
 
-  useEffect(() => { fetchLeads(); }, [fetchLeads]);
+  useEffect(() => {
+    let cancelled = false;
+    const params = {};
+    if (statusFilter) params.status = statusFilter;
+    if (search) params.search = search;
+    getLeads(params).then((data) => { if (!cancelled) setLeads(data); }).catch((err) => { if (!cancelled) setError(err.message); });
+    return () => { cancelled = true; };
+  }, [search, statusFilter]);
 
   const handleSave = async (data) => {
     try {
@@ -31,7 +37,7 @@ export default function LeadList() {
       }
       setShowForm(false);
       setEditLead(null);
-      fetchLeads();
+      loadLeads();
     } catch (err) {
       setError(err.message);
     }
@@ -41,7 +47,7 @@ export default function LeadList() {
     if (!window.confirm('Delete this lead?')) return;
     try {
       await deleteLead(id);
-      fetchLeads();
+      loadLeads();
     } catch (err) {
       setError(err.message);
     }
